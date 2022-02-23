@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <!-- Credits for parts taken over from https://github.com/codehaks/BugVue -->
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <Version>1.0.0</Version>
+        <Authors>axuno gGmbH</Authors>
+        <Description>A Vue 2 demo implementation with NET 6.0 MVC and Bootstrap 5.</Description>
+        <Copyright>axuno gGmbH</Copyright>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\lib\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.2" />
+  </ItemGroup>
+
+</Project>

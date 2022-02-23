@@ -1,0 +1,49 @@
+﻿<div class="modal fade" id="newThingModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add New Thing</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="new-name">Name</label>
+                    <input v-model="name" id="new-name" type="text" class="form-control" style="width:100%">
+                </div>
+                <div class="mb-3">
+                    <label for="new-description">Description</label>
+                    <input v-model="description" id="new-description" name="Description" type="text" class="form-control" style="width:100%">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" v-on:click="addThing">Save changes</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="editThingModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Thing</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="edit-name">Name</label>
+                    <input v-model="name" id="edit-name" type="text" class="form-control" style="width:100%">
+                </div>
+                <div class="mb-3">
+                    <label for="edit-description">Description</label>
+                    <input v-model="description" id="edit-description" name="Description" type="text" class="form-control" style="width:100%">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" v-on:click="editThingConfirm">Save changes</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

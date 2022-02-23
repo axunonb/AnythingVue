@@ -1,0 +1,230 @@
+﻿@{
+    ViewData["Title"] = "AnythingVue Demo";
+}
+<div id="app">
+    <h2>AnythingVue Demo</h2>
+    <p>
+        A simple demo using
+        <ul>
+            <li>NET 6.0 API controller</li>
+            <li>Entity Framework 6 for Sqlite</li>
+            <li>Bootstrap 5</li>
+            <li>Vue 2.6</li>
+            <li>Axios (for XMLHttpRequests to the API controller)</li>
+            <li>Notyf (for UI notification pop-ups)</li>
+        </ul>
+        All vanilla JavaScript - no jQuery or jQuery dependencies.
+    </p>
+    <hr />
+    <a href="#" class="btn btn-success" v-on:click="showModal">New...</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tr v-for="(thing,index) in things">
+            <td>{{index+1}}</td>
+            <td>{{thing.id}}</td>
+            <td>{{thing.name}}</td>
+            <td>{{thing.description}}</td>
+            <td>
+                <a href="#" class="btn btn-danger" v-on:click="removeThing(thing,index)">Remove</a>
+                <a href="#" class="btn btn-primary" v-on:click="editThing(thing,index)">Edit</a>
+            </td>
+        </tr>
+    </table>
+    <partial name="_modals" />
+    
+</div>
+@section Scripts{
+    
+    <!-- https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.prod.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"
+            asp-fallback-src="~/lib/vue/vue.min.js" asp-fallback-test=""
+            crossorigin="anonymous">
+    </script>
+
+    <script>
+        // Duration and position of notifications
+        var notyf = new Notyf(
+            {
+                duration: 4000,
+                position: {
+                    x: 'right',
+                    y: 'top'
+                }
+            });
+
+        var app = new Vue(
+            {
+                // 'app' is the ID of div element
+                el: "#app",
+                data: {
+                    // stores all Things
+                    things: [],
+                    // the current Thing
+                    name: "",
+                    description: "",
+                    editItemIndex: null,
+                    itemDbId: null
+                },
+
+                // Hook after the Vue instance is created
+                // The steps in Vue lifecycle are: beforeCreate, created, beforeMount, mounted, beforeUpdate, updated, beforeDestroy, destroyed
+                created: function() {
+                    this.getThings();
+                },
+
+                methods: {
+                    clearData: function() {
+                        var vm = this;  // use closure
+
+                        vm.name = "";
+                        vm.description = "";
+                        vm.editItemIndex = null;
+                        vm.itemDbId = null;
+                    },
+
+                    editThing: function(item, index) {
+                        var vm = this;  // use closure
+
+                        vm.name = item.name;
+                        vm.description = item.description;
+                        vm.editItemIndex = index;
+                        vm.itemDbId = item.id;
+
+                        var editModalElement = document.getElementById('editThingModal');
+                        // Gets the a Bootstrap modal instance for the element
+                        var editModal = new bootstrap.Modal(editModalElement,
+                            {
+                                keyboard: true,
+                                focus: true
+                            });
+                        editModalElement.addEventListener('shown.bs.modal',
+                            function() {
+                                var nameInputElement = document.getElementById('edit-name');
+                                nameInputElement.focus();
+                                nameInputElement.select();
+                            });
+
+                        editModal.show();
+                    },
+
+                    editThingConfirm: function(clickEvent) {
+                        var vm = this;  // use closure
+
+                        var editedThing = {
+                            id: vm.itemDbId,
+                            name: vm.name,
+                            description: vm.description
+                        }
+
+                        axios.put('/thing', editedThing)
+                            .then(function(response) {
+                                // Assign from response, e.g. in case of any trimming of whitespace
+                                vm.things[vm.editItemIndex].name = response.data.name;
+                                vm.things[vm.editItemIndex].description = response.data.description;
+                                notyf.success("Changed thing saved.");
+                            })
+                            .catch(function(error) {
+                                notyf.error("Cannot save changes to thing: " + error.response.data);
+                            })
+                            .then(function() {
+                                // always called
+                                vm.clearData();
+                            });
+
+                        var editModalElement = document.getElementById('editThingModal');
+                        // Gets the a Bootstrap modal instance for the element
+                        var editModal = bootstrap.Modal.getInstance(editModalElement);
+                        editModal.hide();
+                    },
+
+                    removeThing: function(item, index) {
+                        var vm = this;  // use closure
+
+                        var thingToRemove = {
+                            id: item.id,
+                            name: item.name,
+                            description: item.description
+                        }
+
+                        axios.delete('/thing', { data: thingToRemove })
+                            .then(function(response) {
+                                vm.things.splice(index, 1);
+                                notyf.success("Thing removed.");
+                            })
+                            .catch(function(error) {
+                                notyf.error("Cannot remove this thing: " + error.response.data);
+                            });
+                    },
+
+                    addThing: function() {
+                        var vm = this;  // use closure
+
+                        var newThing = {
+                            id: 0,
+                            name: vm.name,
+                            description: vm.description
+                        }
+
+                        axios.post('/thing', newThing)
+                            .then(function(response) {
+                                newThing.id = response.data.id;
+                                vm.things.splice(0, 0, newThing);
+                                notyf.success("New thing added.");
+                            })
+                            .catch(function(error) {
+                                notyf.error("Cannot add new thing: " + error.response.data);
+                            })
+                            .then(function() {
+                                // always called
+                                vm.clearData();
+                            });
+
+                        var newModalElement = document.getElementById('newThingModal');
+                        // Gets the a Bootstrap modal instance for the element
+                        var newModal = bootstrap.Modal.getInstance(newModalElement);
+                        newModal.hide();
+                    },
+
+                    getThings: function() {
+                        var vm = this;  // use closure
+                        axios.get('/thing')
+                            .then(function(response) {
+                                vm.things = response.data;
+                                notyf.success("All things loaded.");
+                            })
+                            .catch(function(error) {
+                                notyf.error("Cannot load things: "  + error.response.data);
+                            });
+                    },
+
+                    showModal: function() {
+                        // Clear - otherwise the Thing last displayed for edit will show
+                        this.clearData();
+                        var newModalElement = document.getElementById('newThingModal');
+                        // Create a new Bootstrap modal using the specified element
+                        var newModal = new bootstrap.Modal(newModalElement,
+                            {
+                                keyboard: true,
+                                focus: true
+                            });
+
+                        newModalElement.addEventListener('shown.bs.modal',
+                            function() {
+                                var nameInputElement = document.getElementById('new-name');
+                                nameInputElement.focus();
+                                nameInputElement.select();
+                            });
+                        newModal.show();
+                    }
+                }
+            });
+    </script>
+}
